@@ -117,3 +117,25 @@ app.*.symbols
 !**/ios/**/default.perspectivev3
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 !/dev/ci/**/Gemfile.lock
+
+
+# Company private Firebase / Google Cloud files
+serviceAccountKey.json
+**/serviceAccountKey.json
+
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+lib/firebase_options.dart
+
+# IDE
+.idea/
+
+# Node modules
+node_modules/
+
+# Company private files
+serviceAccountKey.json
+**/serviceAccountKey.json
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+lib/firebase_options.dart
