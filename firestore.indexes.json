@@ -1,0 +1,39 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "studentReports",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "studentId", "order": "ASCENDING" },
+        { "fieldPath": "published", "order": "ASCENDING" },
+        { "fieldPath": "publishedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "studentReports",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "studentId", "order": "ASCENDING" },
+        { "fieldPath": "published", "order": "ASCENDING" },
+        { "fieldPath": "viewedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reminder_queue",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "nextReminderAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "students",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "parentUids", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "admissionNo", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

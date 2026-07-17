@@ -9,4 +9,4 @@
 // returned idToken is accepted by Firebase. Without it, sign-in returns a token
 // Firebase will reject.
 const String kGoogleServerClientId =
-    'PASTE_YOUR_WEB_CLIENT_ID.apps.googleusercontent.com';
+    '193864081571-uj4m1e3c1pnjevv3g35gc94a48u5fkd7.apps.googleusercontent.com';
