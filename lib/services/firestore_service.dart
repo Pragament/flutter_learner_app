@@ -1,9 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/question_paper.dart';
 import '../models/report.dart';
 import '../models/result.dart';
 import '../models/student.dart';
+import '../models/test_info.dart';
 
 enum ClaimResult { success, notFound, alreadyClaimed, noPhoneOnRecord }
+
+/// Pairs a student's result on one test with that test's metadata
+/// (mainly for the date, used to sort/chart progress over time).
+class ResultWithTestInfo {
+  final TestResult result;
+  final TestInfo? testInfo;
+  ResultWithTestInfo(this.result, this.testInfo);
+}
 
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -16,6 +26,10 @@ class FirestoreService {
       _db.collection('results');
   CollectionReference<Map<String, dynamic>> get _users =>
       _db.collection('users');
+  CollectionReference<Map<String, dynamic>> get _tests =>
+      _db.collection('tests');
+  CollectionReference<Map<String, dynamic>> get _questionPapers =>
+      _db.collection('questionpapers');
 
   Future<void> saveFcmToken(String uid, String token) {
     return _users.doc(uid).set(
@@ -109,5 +123,53 @@ class FirestoreService {
       'viewedBy': uid,
       'status': 'viewed',
     });
+  }
+
+  /// Fetch a single test's metadata (mainly for its questionPaperID,
+  /// used to load the matching question bank for a detailed report).
+  Future<TestInfo?> getTest(String testId) async {
+    if (testId.isEmpty) return null;
+    final doc = await _tests.doc(testId).get();
+    if (!doc.exists) return null;
+    return TestInfo.fromDoc(doc);
+  }
+
+  /// Fetch a question paper by ID, parsed into a lookup map keyed by
+  /// "Subject_N" (matching a results doc's "Subject_QN" fields).
+  Future<QuestionPaper?> getQuestionPaper(String questionPaperId) async {
+    if (questionPaperId.isEmpty) return null;
+    final doc = await _questionPapers.doc(questionPaperId).get();
+    if (!doc.exists) return null;
+    return QuestionPaper.fromDoc(doc);
+  }
+
+  /// Fetch one student's result for one specific test, using the
+  /// deterministic "{testId}_{studentId}" doc ID the publish step writes.
+  Future<TestResult?> getResult(String testId, String studentId) async {
+    final doc = await _results.doc('${testId}_$studentId').get();
+    if (!doc.exists) return null;
+    return TestResult.fromDoc(doc.id, doc.data()!);
+  }
+
+  /// All of a student's results across every test they've taken, each
+  /// paired with that test's metadata (for date-based sorting/charting
+  /// on the monthly progress report). Sorted chronologically ascending.
+  Future<List<ResultWithTestInfo>> fetchAllResultsWithTestInfo(
+    String studentId,
+  ) async {
+    final results = await fetchResultsForStudent(studentId);
+    final paired = await Future.wait(results.map((r) async {
+      final info = await getTest(r.testId);
+      return ResultWithTestInfo(r, info);
+    }));
+    paired.sort((a, b) {
+      final da = a.testInfo?.parsedDate;
+      final db = b.testInfo?.parsedDate;
+      if (da == null && db == null) return 0;
+      if (da == null) return -1;
+      if (db == null) return 1;
+      return da.compareTo(db);
+    });
+    return paired;
   }
 }

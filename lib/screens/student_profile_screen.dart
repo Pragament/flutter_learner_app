@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/result.dart';
 import '../models/student.dart';
 import '../services/firestore_service.dart';
-import 'student_report_screen.dart';
+import 'full_test_report_screen.dart';
+import 'monthly_report_screen.dart';
 
 /// Shows a student's profile and all their test results.
 class StudentProfileScreen extends StatelessWidget {
@@ -20,6 +21,17 @@ class StudentProfileScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
         elevation: 0.5,
+        actions: [
+          TextButton.icon(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => MonthlyReportScreen(student: student),
+              ),
+            ),
+            icon: const Icon(Icons.show_chart, size: 18),
+            label: const Text('Progress'),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -190,7 +202,7 @@ class _ResultCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (_) => StudentReportScreen(result: result),
+          builder: (_) => FullTestReportScreen(result: result),
         ),
       ),
       child: Container(
