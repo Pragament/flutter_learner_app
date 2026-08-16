@@ -27,6 +27,23 @@ class SubjectScore {
   }
 }
 
+/// One question from an OMR result's `questionReview` map — the student's
+/// actual selected letter, the correct letter, and the status. Used for OMR
+/// tests that have no rich `questionpapers` link (letters only).
+class OmrAnswer {
+  final int number;
+  final String selected;
+  final String correct;
+  final String status; // "correct" | "wrong" | "unmarked"
+
+  OmrAnswer({
+    required this.number,
+    required this.selected,
+    required this.correct,
+    required this.status,
+  });
+}
+
 class TestResult {
   final String docId;
   final String studentId;
@@ -35,6 +52,8 @@ class TestResult {
   final String testName;
   final Map<String, SubjectScore> subjectScores;
   final Map<String, String> rawAnswers;
+  final List<OmrAnswer> omrAnswers;
+  final double omrScore;
 
   TestResult({
     required this.docId,
@@ -44,12 +63,18 @@ class TestResult {
     required this.testName,
     required this.subjectScores,
     required this.rawAnswers,
+    this.omrAnswers = const [],
+    this.omrScore = 0,
   });
 
-  int get totalCorrect =>
-      subjectScores.values.fold(0, (sum, s) => sum + s.correct);
-  int get totalQuestions =>
-      subjectScores.values.fold(0, (sum, s) => sum + s.total);
+  bool get hasOmrReview => omrAnswers.isNotEmpty;
+
+  int get totalCorrect => subjectScores.isNotEmpty
+      ? subjectScores.values.fold(0, (sum, s) => sum + s.correct)
+      : omrAnswers.where((q) => q.status == 'correct').length;
+  int get totalQuestions => subjectScores.isNotEmpty
+      ? subjectScores.values.fold(0, (sum, s) => sum + s.total)
+      : omrAnswers.length;
   double get overallPercentage =>
       totalQuestions == 0 ? 0 : (totalCorrect / totalQuestions) * 100;
   String get overallGrade {
@@ -111,6 +136,32 @@ class TestResult {
       );
     }
 
+    // OMR letter-level review (selected/correct/status per question), written by
+    // the Test Manager for tests without a rich questionpapers link.
+    final omrAnswers = <OmrAnswer>[];
+    final reviewRaw = data['questionReview'];
+    if (reviewRaw is Map) {
+      reviewRaw.forEach((k, v) {
+        if (v is! Map) {
+          return;
+        }
+        omrAnswers.add(OmrAnswer(
+          number: int.tryParse(k.toString()) ?? 0,
+          selected: (v['selected'] ?? '').toString(),
+          correct: (v['correct'] ?? '').toString(),
+          status: (v['status'] ?? '').toString(),
+        ));
+      });
+      omrAnswers.sort((a, b) => a.number.compareTo(b.number));
+    }
+    // `score` may be a number (num) or a string ("51.0") depending on the writer,
+    // so resolve it defensively — a bad cast here would crash the whole results
+    // stream and hide every result, not just this one.
+    final scoreRaw = data['score'];
+    final double omrScore = scoreRaw is num
+        ? scoreRaw.toDouble()
+        : double.tryParse(scoreRaw?.toString() ?? '') ?? 0;
+
     return TestResult(
       docId: docId,
       studentId: studentId,
@@ -119,6 +170,8 @@ class TestResult {
       testName: testName,
       subjectScores: subjectScores,
       rawAnswers: rawAnswers,
+      omrAnswers: omrAnswers,
+      omrScore: omrScore,
     );
   }
 }

@@ -24,6 +24,7 @@ class OmrParentApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'School Reports',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
