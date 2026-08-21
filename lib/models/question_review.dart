@@ -87,3 +87,31 @@ List<QuestionReview> buildQuestionReviews(
   items.sort((a, b) => a.questionNumber.compareTo(b.questionNumber));
   return items;
 }
+
+/// Builds a letters-only review for OMR results that have no `questionpapers`
+/// link. Maps each `OmrAnswer` (selected/correct/status) onto the same
+/// `QuestionReview` shape so it renders with the existing question card —
+/// just without question text, options, or explanation.
+List<QuestionReview> buildOmrQuestionReviews(TestResult result) {
+  return result.omrAnswers.map((a) {
+    // rawAnswer drives the card's status: "R" = correct, "" = unmarked/skipped,
+    // otherwise the student's selected letter (a wrong answer).
+    final raw = a.status == 'correct'
+        ? 'R'
+        : a.status == 'unmarked'
+            ? ''
+            : a.selected;
+    return QuestionReview(
+      questionNumber: a.number,
+      subject: '',
+      chapter: '',
+      topic: '',
+      subtopic: '',
+      questionText: '',
+      options: const [],
+      correctLabel: a.correct,
+      rawAnswer: raw,
+      explanation: '',
+    );
+  }).toList();
+}

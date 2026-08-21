@@ -42,8 +42,11 @@ class FullTestReportScreen extends StatelessWidget {
                 return const Center(child: CircularProgressIndicator());
               }
               final paper = paperSnap.data;
-              final reviews =
-                  paper != null ? buildQuestionReviews(result, paper) : null;
+              // Prefer the rich review (joined with questionpapers); fall back to
+              // the OMR letters-only review when this test has no question paper.
+              final reviews = paper != null
+                  ? buildQuestionReviews(result, paper)
+                  : (result.hasOmrReview ? buildOmrQuestionReviews(result) : null);
 
               return SingleChildScrollView(
                 padding: const EdgeInsets.all(14),

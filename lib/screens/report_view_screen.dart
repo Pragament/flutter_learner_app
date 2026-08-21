@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../models/report.dart';
+import '../models/student_report.dart';
 import '../services/auth_service.dart';
 import '../services/firestore_service.dart';
 
 /// Opens a report and stamps viewedAt — the cron stop signal.
 class ReportViewScreen extends StatefulWidget {
-  final Report report;
+  final StudentReport report;
   const ReportViewScreen({super.key, required this.report});
 
   @override

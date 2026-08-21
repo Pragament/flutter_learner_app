@@ -173,18 +173,46 @@ class _SummaryGrid extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       mainAxisSpacing: 8,
       crossAxisSpacing: 8,
-      childAspectRatio: 1.3,
+      childAspectRatio: 1.4, // Increased ratio for a more compact/shorter look
       children: [
-        _SummaryTile(label: 'Tests Taken', value: '$testsTaken', color: Colors.indigo),
         _SummaryTile(
-            label: 'Average', value: '${average.toStringAsFixed(0)}%', color: Colors.teal),
+          label: 'Tests',
+          value: '$testsTaken',
+          icon: Icons.assignment_outlined,
+          color: Colors.indigo,
+        ),
         _SummaryTile(
-            label: 'Best', value: '${best.toStringAsFixed(0)}%', color: Colors.green),
+          label: 'Average',
+          value: '${average.toStringAsFixed(0)}%',
+          icon: Icons.analytics_outlined,
+          color: Colors.teal,
+        ),
         _SummaryTile(
-            label: 'Latest', value: '${latest.toStringAsFixed(0)}%', color: Colors.blue),
-        _SummaryTile(label: 'Strongest', value: strongest, color: Colors.purple, small: true),
+          label: 'Best',
+          value: '${best.toStringAsFixed(0)}%',
+          icon: Icons.emoji_events_outlined,
+          color: Colors.orange,
+        ),
         _SummaryTile(
-            label: 'Needs Attention', value: weakest, color: Colors.deepOrange, small: true),
+          label: 'Latest',
+          value: '${latest.toStringAsFixed(0)}%',
+          icon: Icons.history,
+          color: Colors.blue,
+        ),
+        _SummaryTile(
+          label: 'Strongest',
+          value: strongest,
+          icon: Icons.trending_up,
+          color: Colors.purple,
+          small: true,
+        ),
+        _SummaryTile(
+          label: 'Attention',
+          value: weakest,
+          icon: Icons.priority_high,
+          color: Colors.deepOrange,
+          small: true,
+        ),
       ],
     );
   }
@@ -193,38 +221,57 @@ class _SummaryGrid extends StatelessWidget {
 class _SummaryTile extends StatelessWidget {
   final String label;
   final String value;
+  final IconData icon;
   final Color color;
   final bool small;
-  const _SummaryTile(
-      {required this.label, required this.value, required this.color, this.small = false});
+
+  const _SummaryTile({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+    this.small = false,
+  });
 
   @override
   Widget build(BuildContext context) {
+    // Determine the base MaterialColor if possible to use shades,
+    // otherwise fallback to the provided color.
+    final Color displayColor = color is MaterialColor ? (color as MaterialColor).shade900 : color;
+    final Color labelColor = color is MaterialColor ? (color as MaterialColor).shade700 : color;
+
     return Container(
-      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: color.withOpacity(0.08), // Light tinted background
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withOpacity(0.05), blurRadius: 5, offset: const Offset(0, 2)),
-        ],
+        border: Border.all(color: color.withOpacity(0.1), width: 1),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(value,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: small ? 14 : 18,
-                  color: color)),
+          Icon(icon, color: color, size: 16),
           const SizedBox(height: 4),
-          Text(label,
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 10, color: Colors.grey.shade500)),
+          Text(
+            value,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: small ? 12 : 15,
+              color: displayColor, // Good contrast on light tint
+            ),
+          ),
+          const SizedBox(height: 1),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 8.5,
+              fontWeight: FontWeight.w500,
+              color: labelColor.withOpacity(0.7),
+            ),
+          ),
         ],
       ),
     );
@@ -294,6 +341,23 @@ class _ProgressChart extends StatelessWidget {
             ),
           ),
           lineTouchData: LineTouchData(
+            touchTooltipData: LineTouchTooltipData(
+              getTooltipColor: (spot) => Colors.white.withOpacity(0.95),
+              tooltipRoundedRadius: 8,
+              tooltipBorder: BorderSide(color: Colors.indigo.withOpacity(0.2)),
+              getTooltipItems: (touchedSpots) {
+                return touchedSpots.map((spot) {
+                  return LineTooltipItem(
+                    '${spot.y.toStringAsFixed(1)}%',
+                    const TextStyle(
+                      color: Colors.indigo,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  );
+                }).toList();
+              },
+            ),
             touchCallback: (event, response) {
               if (!event.isInterestedForInteractions) return;
               final spot = response?.lineBarSpots?.firstOrNull;

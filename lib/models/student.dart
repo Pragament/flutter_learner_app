@@ -8,7 +8,9 @@ class Student {
   final String rollNo;
   final String sectionId;
   final String studentClass;
+  final String classSection;
   final String phoneNumber;
+  final String schoolCode;
   final List<String> parentIds;
 
   Student({
@@ -19,7 +21,9 @@ class Student {
     required this.rollNo,
     required this.sectionId,
     required this.studentClass,
+    required this.classSection,
     required this.phoneNumber,
+    required this.schoolCode,
     required this.parentIds,
   });
 
@@ -33,7 +37,9 @@ class Student {
       rollNo: (d['rollNo'] ?? '').toString(),
       sectionId: (d['sectionId'] ?? '').toString(),
       studentClass: (d['class'] ?? '').toString(),
+      classSection: (d['classSection'] ?? '').toString(),
       phoneNumber: (d['phoneNumber'] ?? '').toString(),
+      schoolCode: (d['schoolCode'] ?? '').toString(),
       parentIds: List<String>.from(d['parentIds'] ?? d['parentUids'] ?? []),
     );
   }

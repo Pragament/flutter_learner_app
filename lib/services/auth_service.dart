@@ -1,10 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../constants.dart';
 
+enum AppMode { parent, staff }
+
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  static final ValueNotifier<AppMode?> preferredMode = ValueNotifier(null);
 
   Stream<User?> get authState => _auth.authStateChanges();
   User? get currentUser => _auth.currentUser;
@@ -38,5 +42,6 @@ class AuthService {
   Future<void> signOut() async {
     if (!kIsWeb) await GoogleSignIn.instance.signOut();
     await _auth.signOut();
+    preferredMode.value = null;
   }
 }

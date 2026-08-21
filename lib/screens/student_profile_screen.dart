@@ -113,7 +113,7 @@ class StudentProfileScreen extends StatelessWidget {
           Expanded(
             child: StreamBuilder<List<TestResult>>(
               stream: firestore
-                  .streamResultsForStudent(student.studentId),
+                  .streamResultsForStudent(student),
               builder: (context, snap) {
                 if (snap.connectionState ==
                     ConnectionState.waiting) {

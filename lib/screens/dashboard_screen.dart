@@ -62,6 +62,43 @@ class _StudentCard extends StatelessWidget {
   final Student student;
   const _StudentCard({required this.student});
 
+  Future<void> _showDeleteDialog(BuildContext context, Student student) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Remove Student?'),
+        content: Text(
+            'Are you sure you want to remove ${student.name} from your account? '
+            'You can add them back later with their school code, admission number, and phone number.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      final auth = AuthService();
+      final firestore = FirestoreService();
+      final uid = auth.currentUser?.uid;
+      if (uid != null) {
+        await firestore.unclaimStudent(uid, student.docId);
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('${student.name} removed.')),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -79,7 +116,17 @@ class _StudentCard extends StatelessWidget {
             style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(
             'Adm No: ${student.admissionNo} • Class: ${student.studentClass}'),
-        trailing: const Icon(Icons.chevron_right),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+              tooltip: 'Remove Student',
+              onPressed: () => _showDeleteDialog(context, student),
+            ),
+            const Icon(Icons.chevron_right),
+          ],
+        ),
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => StudentProfileScreen(student: student),
